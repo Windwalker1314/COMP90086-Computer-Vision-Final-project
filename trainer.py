@@ -37,16 +37,7 @@ val_generator = val_datagen.flow_from_directory(
                         batch_size=32
                     )
 
-"""
-vgg_model = VGG16(input_shape=(224,224,3),include_top=False,weights='imagenet')
-#for layer in vgg_model.layers:
-#    layer.trainable = False
-x = Flatten()(vgg_model.output)
-x=Dense(1024,activation='relu')(x)
-x=Dense(120, activation='softmax')(x)
-model = Model(inputs=vgg_model.input, outputs=x)
-model.compile(optimizer='Adam',loss=SparseCategoricalCrossentropy(),metrics=["accuracy"])
-"""
+
 model = CellClassifier()
 
 callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)

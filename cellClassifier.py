@@ -8,8 +8,19 @@ import tensorflow as tf
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D,Flatten, Dense, Dropout
+from tensorflow.keras.applications.vgg16 import VGG16
 
-def CellClassifier(input_size = (224,224,3), classes = 120):
+def CellClassifier():
+    vgg_model = VGG16(input_shape=(224,224,3),include_top=False,weights='imagenet')
+    x = Flatten()(vgg_model.output)
+    x=Dense(1024,activation='relu')(x)
+    x=Dense(120, activation='softmax')(x)
+    model = Model(inputs=vgg_model.input, outputs=x)
+    model.compile(optimizer='Adam',loss=SparseCategoricalCrossentropy(),metrics=["accuracy"])
+    return model
+
+def CellClassifier_v1(input_size = (224,224,3), classes = 120):
+    # VGG with fewer parameters
     img_input = Input(shape=input_size)
     x = Conv2D(32, (5, 5), activation='relu', padding='valid', name='block1_conv1')(img_input)
     x = Conv2D(32, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
