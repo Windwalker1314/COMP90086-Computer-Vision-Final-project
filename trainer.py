@@ -5,40 +5,47 @@ Created on Tue Sep 28 08:06:45 2021
 @author: Windwalker
 """
 import tensorflow as tf
+import pandas as pd
 from keras.preprocessing.image import ImageDataGenerator
-from cellclassifier import CellClassifier
+from cellClassifier import CellClassifier_Xception
 data_gen_args = dict(rescale=1./255,
                      width_shift_range=0,
                      height_shift_range=0,
                      zoom_range=0,
                      horizontal_flip=False,
-                     vertical_flip=False)
+                     vertical_flip=False,
+                     validation_split=0.1)
 
 seed = 1
-train_dir = './data_cells/train_dir'
-val_dir = './data_cells/val_dir'
+df = pd.read_csv("train_with_cells.csv")
 
 train_datagen = ImageDataGenerator(**data_gen_args)
 val_datagen = ImageDataGenerator(**data_gen_args)
-train_generator = train_datagen.flow_from_directory(
-                        train_dir,
-                        color_mode="rgb",
-                        seed=seed,
-                        target_size=(224,224),
-                        class_mode="sparse",
-                        batch_size=32
-                    )
-val_generator = val_datagen.flow_from_directory(
-                        val_dir,
-                        color_mode="rgb",
-                        seed=seed,
-                        target_size=(224,224),
-                        class_mode="sparse",
-                        batch_size=32
-                    )
+df = pd.read_csv("train_with_cells.csv")
+df = df.astype({'cells1':'str'})
+train_generator = train_datagen.flow_from_dataframe(dataframe=df,
+                                                    directory='./data/train/',
+                                                    x_col='filename',
+                                                    y_col='cells1',
+                                                    subset="training",
+                                                    batch_size = 32,
+                                                    seed=seed,
+                                                    shuffle=True,
+                                                    class_mode='sparse',
+                                                    target_size=(224,224))
+val_generator = val_datagen.flow_from_dataframe(dataframe=df,
+                                                directory='./data/train/',
+                                                x_col='filename',
+                                                y_col='cells1',
+                                                subset="validation",
+                                                batch_size = 32,
+                                                seed=seed,
+                                                shuffle=True,
+                                                class_mode='sparse',
+                                                target_size=(224,224))
 
 
-model = CellClassifier()
+model = CellClassifier_Xception()
 
 callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
 r=model.fit(train_generator, validation_data=val_generator,

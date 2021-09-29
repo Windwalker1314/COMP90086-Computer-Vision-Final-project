@@ -95,6 +95,8 @@ def generateCellID(row):
 def generateLocationID(row):
     return point2pointid[(row.x,row.y)]
 
-df['cells1']=df.apply(lambda row: generateCellID(row), axis=1)
+df['cells1']     = df.apply(lambda row: generateCellID(row), axis=1)
 df['locationID'] = df.apply(lambda row: generateLocationID(row), axis=1)
+df['filename']   = df.apply(lambda row: row.id+'.jpg',axis=1) 
+
 df.to_csv("train_with_cells.csv",index=False)
